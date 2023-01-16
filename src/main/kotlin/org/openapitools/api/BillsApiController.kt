@@ -33,9 +33,9 @@ import kotlin.collections.Map
 @RequestMapping("\${api.base-path:}")
 class BillsApiController() {
 
-    private val bill1 = BillDetails(BillStatus.ready,"1234", "Outside",1000L, "123")
-    private val bill2 = BillDetails(BillStatus.ready,"1235", "Outside",1200L, "123")
-    private val bill3 = BillDetails(BillStatus.ready,"1235", "Outside",1200L, "123")
+    private val bill1 = BillDetails(BillStatus.ready,"1234", "Outside",1000L, "123", itemizedBill = "Pizza")
+    private val bill2 = BillDetails(BillStatus.ready,"1235", "Outside",1200L, itemizedBill = "Pizza")
+    private val bill3 = BillDetails(BillStatus.ready,"1235", "Outside",1200L, itemizedBill = "Pizza")
     @Operation(
         summary = "Create a new Bill",
         operationId = "createBill",
