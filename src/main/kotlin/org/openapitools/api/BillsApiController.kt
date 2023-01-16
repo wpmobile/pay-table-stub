@@ -21,9 +21,10 @@ import javax.validation.constraints.Size
 @RequestMapping("\${api.base-path:}")
 class BillsApiController() {
 
-    private val bill1 = BillDetails(BillStatus.ready, "1234", "Outside", 1000L, "123", itemizedBill = "Pizza")
-    private val bill2 = BillDetails(BillStatus.ready, "1235", "Outside", 1200L, itemizedBill = "Pizza")
-    private val bill3 = BillDetails(BillStatus.ready, "1235", "Outside", 1200L, itemizedBill = "Pizza")
+    private val bill1 = BillDetails(BillStatus.ready, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
+    private val bill1pending = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
+    private val bill2 = BillDetails(BillStatus.ready, "1235", "Table2", 1200L, itemizedBill = "Pizza")
+    private val bill3 = BillDetails(BillStatus.ready, "1235", "Table3", 1200L, itemizedBill = "Pizza")
 
     @Operation(
         summary = "Create a new Bill",
@@ -234,7 +235,7 @@ class BillsApiController() {
         method = [RequestMethod.PUT],
         value = ["/bills/{billId}"],
         produces = ["application/vnd.worldpay.bill-v1+json", "application/json"],
-        consumes = ["application/vnd.worldpay.bill-v1+json"]
+        consumes = ["application/vnd.worldpay.bill-v1+json", "application/json;charset=UTF-8"]
     )
     fun updateBill(
         @Pattern(regexp = "^[a-zA-Z0-9_-]{1,30}$") @Size(
@@ -253,6 +254,6 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<BillDetails> {
-        return ResponseEntity(bill3, null, HttpStatus.CREATED)
+        return ResponseEntity(bill1pending, null, HttpStatus.CREATED)
     }
 }
