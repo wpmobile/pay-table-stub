@@ -58,6 +58,5 @@ data class BillDetails(
     @Schema(example = "null", description = "")
     @field:JsonProperty("paymentDetails") val paymentDetails: kotlin.collections.List<PaymentDetails>? = null
 ) {
-
 }
 

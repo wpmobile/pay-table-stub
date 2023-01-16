@@ -34,6 +34,8 @@ import kotlin.collections.Map
 @RequestMapping("\${api.base-path:}")
 class UsersApiController() {
 
+    val user1 = User("123", "Marcus")
+
     @Operation(
         summary = "Verify user ID",
         operationId = "getUserById",
@@ -53,6 +55,6 @@ class UsersApiController() {
         produces = ["application/vnd.worldpay.bill-v1+json", "application/json"]
     )
     fun getUserById(@Pattern(regexp="^[a-zA-Z0-9_-]{1,30}$") @Size(min=1,max=30) @Parameter(description = "", required = true) @PathVariable("userId") userId: kotlin.String): ResponseEntity<User> {
-        return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
+        return ResponseEntity(user1, null, HttpStatus.OK)
     }
 }
