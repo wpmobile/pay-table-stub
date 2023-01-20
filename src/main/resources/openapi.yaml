@@ -1,0 +1,1578 @@
+openapi: 3.0.1
+info:
+  description: "# Summary\n  Given set of APIs for Bill management process\n# Versioning\n\
+    \  By default, all requests receive the latest version of the REST API.  We encourage\
+    \ you to explicitly request this version via the Accept header. Example \n   \
+    \          \n  \"Accept: application/vnd.worldpay.bill-v1+json\"\n  \n# Security\
+    \ \nAPIs use JWT Based Bearer Authentication. JWT Token must contain claims to\
+    \ merchant and terminal operator identifiers at minimum.\n\n# Response Codes \n\
+    \nA list of the  common HTTP response codes used in POS API is given below:\n\n\
+    \  |HTTP Code|HTTP Verb|Description|\n  |--- |--- |--- |\n  |200|GET POST PUT|The\
+    \ request has succeeded.|\n  |201|POST|The request has succeeded and a new resource\
+    \ has been created as a result.|\n  |202|GET POST|The request has succeeded, but\
+    \ the response body is incomplete.|\n  |204|PUT DELETE|The request has succeeded,\
+    \ an existing resource has been updated/deleted and the response body is empty.|\n\
+    \  |400|POST PUT|The service could not understand the request.|\n  |401|Any|The\
+    \ client must authenticate itself.|\n  |404|GET PUT DELETE|The service can not\
+    \ find requested resource.|\n  |409|POST|The service has experienced a conflict\
+    \ between the data provided in the request and the data on file.|\n  |415|Any|Content-Type\
+    \ and/or Accept headers are missing or invalid|\n  |422|Any|The request was well-formed\
+    \ but could not be processed due to semantic errors.|\n  |500|Any|An error occurred\
+    \ within the service which hasn’t been accounted for.|\n  |503|Any|The service\
+    \ is not ready to handle the request.|\n\n# Errors  \n\nThe response contains\
+    \ an errorName that is both human-readable and machine-readable, with a human-readable\
+    \ message to add context to help you diagnose the error.\n\nIf there are multiple\
+    \ errors, the response includes all the errors in a nested list within the top-level\
+    \ error.\n\n### Generic Error Format  \n```\n{\n  \"errorName\": \"errorName\"\
+    ,\n  \"message\": \"human readable message\"\n}\n```\n\n### Specific Error Format\
+    \  \n \nValidation errors must also contain a path to the location of the value\
+    \ that caused the error. The field to use here depends on whether the error ocurred\
+    \ on the URL or in the JSON request body:\n \n```\n{\n  \"errorName\": \"bodyDoesNotMatchSchema\"\
+    ,\n  \"message\": \"The json body provided does not match the expected schema\"\
+    ,\n  \"validationErrors\": [\n      {\n        \"errorName\": \"fieldMustBeNumber\"\
+    ,\n        \"message\": \"Field at path must be a number\",\n        \"jsonPath\"\
+    : \"$.amount\"\n      }\n    ]\n  }\n"
+  title: Bill Management
+  version: 0.0.6
+servers:
+- url: "https://{host}:{port}/"
+security:
+- bearerAuth: []
+tags:
+- description: Everything about your Bills
+  name: Bill
+paths:
+  /bills:
+    get:
+      description: |
+        Default all pending status bills be returned. Multiple status values can be provided with comma separated strings
+      operationId: listBills
+      parameters:
+      - description: "All possible values for bill.\n\n`ready` - used to get the bill\
+          \ from order management \n\n`pending` - once bill is open to be processed\n\
+          \n`in-progress` - used to update once bill is picked-up for payment.\n\n\
+          `complete` - once bill is completely paid\n\n`partial-complete` - if bill\
+          \ is partially paid(in split payment) and wants to pay to the counter OR\
+          \ customer wants to update the bill in un-happy path\n\n`cancel` - to cancel\
+          \ a bill\n"
+        explode: true
+        in: query
+        name: billStatus
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/listBills_billStatus_parameter_inner'
+          type: array
+        style: form
+      - description: Bill tag of bill to be provided
+        explode: true
+        in: query
+        name: billTag
+        required: false
+        schema:
+          $ref: '#/components/schemas/billTagReference'
+        style: form
+      - explode: false
+        in: header
+        name: X-WP-User-Id
+        required: false
+        schema:
+          $ref: '#/components/schemas/userReference'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/vnd.worldpay.bill-v1+json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/billDetails'
+                type: array
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Invalid Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Resource Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Internal Server Error
+      summary: List Bills by status and/or billTag
+      tags:
+      - Bill
+    post:
+      operationId: createBill
+      parameters:
+      - explode: false
+        in: header
+        name: X-WP-User-Id
+        required: false
+        schema:
+          $ref: '#/components/schemas/userReference'
+        style: simple
+      requestBody:
+        content:
+          application/vnd.worldpay.bill-v1+json:
+            schema:
+              $ref: '#/components/schemas/createBillRequest'
+        description: Bill that needs to be generated
+        required: true
+      responses:
+        "201":
+          content:
+            application/vnd.worldpay.bill-v1+json:
+              schema:
+                $ref: '#/components/schemas/billDetails'
+          description: A JSON returning the created bill.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Invalid Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Internal Server Error
+      summary: Create a new Bill
+      tags:
+      - Bill
+  /bills/{billId}:
+    get:
+      description: Returns a single Bill
+      operationId: getBillById
+      parameters:
+      - description: Bill ID to be provided
+        explode: false
+        in: path
+        name: billId
+        required: true
+        schema:
+          $ref: '#/components/schemas/billNumberReference'
+        style: simple
+      - explode: false
+        in: header
+        name: X-WP-User-Id
+        required: false
+        schema:
+          $ref: '#/components/schemas/userReference'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/vnd.worldpay.bill-v1+json:
+              schema:
+                $ref: '#/components/schemas/billDetails'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Invalid Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Resource Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Internal Server Error
+      summary: Find bill by billId
+      tags:
+      - Bill
+    put:
+      operationId: updateBill
+      parameters:
+      - description: Bill ID to be provided
+        explode: false
+        in: path
+        name: billId
+        required: true
+        schema:
+          $ref: '#/components/schemas/billNumberReference'
+        style: simple
+      - explode: false
+        in: header
+        name: X-WP-User-Id
+        required: false
+        schema:
+          $ref: '#/components/schemas/userReference'
+        style: simple
+      requestBody:
+        content:
+          application/vnd.worldpay.bill-v1+json:
+            schema:
+              $ref: '#/components/schemas/updateBillRequest'
+        description: Bill that needs to be updated
+        required: true
+      responses:
+        "200":
+          content:
+            application/vnd.worldpay.bill-v1+json:
+              schema:
+                $ref: '#/components/schemas/billDetails'
+          description: A JSON returning the updated Bill.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Invalid Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Resource Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Internal Server Error
+      summary: Update an existing Bill by billId
+      tags:
+      - Bill
+  /users/{userId}:
+    get:
+      description: Returns a user details
+      operationId: getUserById
+      parameters:
+      - explode: false
+        in: path
+        name: userId
+        required: true
+        schema:
+          $ref: '#/components/schemas/userReference'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/vnd.worldpay.bill-v1+json:
+              schema:
+                $ref: '#/components/schemas/user'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Invalid Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Resource Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Internal Server Error
+      summary: Verify user ID
+      tags:
+      - Bill
+components:
+  parameters:
+    billIdParam:
+      description: Bill ID to be provided
+      explode: false
+      in: path
+      name: billId
+      required: true
+      schema:
+        $ref: '#/components/schemas/billNumberReference'
+      style: simple
+    billTagParam:
+      description: Bill tag of bill to be provided
+      explode: true
+      in: query
+      name: billTag
+      required: false
+      schema:
+        $ref: '#/components/schemas/billTagReference'
+      style: form
+    userIdParam:
+      explode: false
+      in: path
+      name: userId
+      required: true
+      schema:
+        $ref: '#/components/schemas/userReference'
+      style: simple
+    userIdHeader:
+      explode: false
+      in: header
+      name: X-WP-User-Id
+      required: false
+      schema:
+        $ref: '#/components/schemas/userReference'
+      style: simple
+    billStatusParam:
+      description: "All possible values for bill.\n\n`ready` - used to get the bill\
+        \ from order management \n\n`pending` - once bill is open to be processed\n\
+        \n`in-progress` - used to update once bill is picked-up for payment.\n\n`complete`\
+        \ - once bill is completely paid\n\n`partial-complete` - if bill is partially\
+        \ paid(in split payment) and wants to pay to the counter OR customer wants\
+        \ to update the bill in un-happy path\n\n`cancel` - to cancel a bill\n"
+      explode: true
+      in: query
+      name: billStatus
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/listBills_billStatus_parameter_inner'
+        type: array
+      style: form
+  responses:
+    InvalidRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errors'
+      description: Invalid Request
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errors'
+      description: Unauthorized
+    Forbidden:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errors'
+      description: Forbidden
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errors'
+      description: Resource Not Found
+    InternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errors'
+      description: Internal Server Error
+  schemas:
+    createBillRequest:
+      properties:
+        billTag:
+          description: |
+            The bill tag reference defined by the merchant to uniquely identify the bill with reference to tag say - table or room or invoice.
+          example: TABLE-11 or ROOM-101
+          maxLength: 30
+          minLength: 1
+          pattern: "^[a-zA-Z0-9_-]{1,30}$"
+          type: string
+        userId:
+          description: |
+            The userId defined by the merchant to uniquely identify  user. Must contain only alpha numeric, hypen (-) and underscore (_) characters.
+          example: user_123-A54B3DF
+          maxLength: 30
+          minLength: 1
+          pattern: "^[a-zA-Z0-9_-]{1,30}$"
+          type: string
+        totalAmount:
+          allOf:
+          - $ref: '#/components/schemas/amount'
+          description: |
+            The total amount of the Bill in minor currency units. A bill with a negative represents a refund.
+          minimum: -999999999
+      required:
+      - userId
+      type: object
+    updateBillRequest:
+      properties:
+        userId:
+          description: |
+            The userId defined by the merchant to uniquely identify  user. Must contain only alpha numeric, hypen (-) and underscore (_) characters.
+          example: user_123-A54B3DF
+          maxLength: 30
+          minLength: 1
+          pattern: "^[a-zA-Z0-9_-]{1,30}$"
+          type: string
+        status:
+          description: |
+            All possible values for bill.
+
+            `pending` - once bill is open to be processed
+
+            `in-progress` - used to update once bill is picked-up for payment.
+
+            `complete` - once bill is completely paid
+
+            `partial-complete` - if bill is partially paid(in split payment) and wants to pay to the counter OR customer wants to update the bill in un-happy path
+
+            `cancel` - to cancel a bill
+          enum:
+          - in-progress
+          - partial-complete
+          - pending
+          - complete
+          - cancel
+          type: string
+        paymentDetails:
+          items:
+            $ref: '#/components/schemas/paymentDetails'
+          type: array
+      required:
+      - status
+      - userId
+      type: object
+    billDetails:
+      example:
+        billTag: ""
+        totalAmount: ""
+        itemizedBill: itemizedBill
+        billId: ""
+        billDateTime: ""
+        paymentDetails:
+        - receiptCustomerDeclaration: receiptCustomerDeclaration
+          merchantTransactionReference: MS_123-A54B3DF
+          transactionDateTime: 2000-01-23T04:56:07.000+00:00
+          taxFreeVoucher: MDEKMDJWT1VDSEVSCjEyCjA2RVhBTVBMRSBDT05URU5UCjEz
+          merchant: null
+          retrievalReferenceNumber: 6027456182
+          paymentInstrument: null
+          paymentType: null
+          result: null
+          paypoint:
+            terminalId: "987654321"
+            paypointId: ""
+          gatewayTransactionReference: 1234567890AB
+          eftSequenceNumber: 1
+          value:
+            amount: 1099
+            dcc:
+              convertedAmount: 1099
+              convertedCurrencyCode: GBP
+              conversionRate: 1.11647
+            cashbackAmount: 1099
+            currencyCode: GBP
+            donationAmount: 1099
+            gratuityAmount: 1099
+          receiptRetentionReminder: receiptRetentionReminder
+          receiptNumber: 1465812981
+        - receiptCustomerDeclaration: receiptCustomerDeclaration
+          merchantTransactionReference: MS_123-A54B3DF
+          transactionDateTime: 2000-01-23T04:56:07.000+00:00
+          taxFreeVoucher: MDEKMDJWT1VDSEVSCjEyCjA2RVhBTVBMRSBDT05URU5UCjEz
+          merchant: null
+          retrievalReferenceNumber: 6027456182
+          paymentInstrument: null
+          paymentType: null
+          result: null
+          paypoint:
+            terminalId: "987654321"
+            paypointId: ""
+          gatewayTransactionReference: 1234567890AB
+          eftSequenceNumber: 1
+          value:
+            amount: 1099
+            dcc:
+              convertedAmount: 1099
+              convertedCurrencyCode: GBP
+              conversionRate: 1.11647
+            cashbackAmount: 1099
+            currencyCode: GBP
+            donationAmount: 1099
+            gratuityAmount: 1099
+          receiptRetentionReminder: receiptRetentionReminder
+          receiptNumber: 1465812981
+        userId: ""
+        status: null
+      properties:
+        billId:
+          allOf:
+          - $ref: '#/components/schemas/billNumberReference'
+          description: |
+            A unique Id associated with this bill
+          readOnly: true
+        billTag:
+          allOf:
+          - $ref: '#/components/schemas/billTagReference'
+          description: |
+            A Tag associated with the given BillId. e.g. Table/Room
+          readOnly: true
+        totalAmount:
+          allOf:
+          - $ref: '#/components/schemas/amount'
+          description: |
+            The total amount of the Bill in minor currency units. A bill with a negative represents a refund.
+          minimum: -999999999
+          readOnly: true
+        userId:
+          allOf:
+          - $ref: '#/components/schemas/userReference'
+          description: |
+            User who is assigned to this bill.
+          readOnly: true
+        billDateTime:
+          allOf:
+          - $ref: '#/components/schemas/billDateTime'
+          description: |
+            The most recent timestamp associated with bill.
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/billStatus'
+        itemizedBill:
+          description: |
+            An itemized bill from Order management.
+          maxLength: 10000
+          minLength: 0
+          pattern: "^[?@+'\"`~^%&\\*\\[\\]\\{\\}.!#|\\\\\\($¢€£₽₹¥₿฿元);,:;=\\/\\(\\\
+            ),\\-\\w\\s+]*$"
+          readOnly: true
+          type: string
+        paymentDetails:
+          items:
+            $ref: '#/components/schemas/paymentDetails'
+          type: array
+      required:
+      - status
+      type: object
+    user:
+      example:
+        userName: userName
+        userId: userId
+      properties:
+        userId:
+          description: user id
+          type: string
+        userName:
+          description: user name
+          type: string
+      type: object
+    paypointIdentifier:
+      description: |
+        Identifier for the paypoint on which the action should or has been performed on. Each paypoint must be given a unique identifier by the merchant.
+      example: INST001
+      maxLength: 12
+      minLength: 1
+      type: string
+    paypoint:
+      description: |
+        The paypoint the request has been performed on.
+      example:
+        terminalId: "987654321"
+        paypointId: ""
+      properties:
+        paypointId:
+          allOf:
+          - $ref: '#/components/schemas/paypointIdentifier'
+          description: |
+            The unique payment ID assigned to this paypoint by the merchant.
+        terminalId:
+          description: |
+            The payment gateway's unique terminal ID the paypoint is registered with.
+          example: "987654321"
+          maxLength: 10
+          minLength: 8
+          type: string
+      type: object
+    merchantIdentifier:
+      description: |
+        Identifies the merchant that originates the payment.
+      properties:
+        merchantId:
+          description: |
+            The payment gateway's merchant ID to identify the merchant.
+          example: "12345678"
+          maxLength: 10
+          minLength: 8
+          type: string
+      required:
+      - merchantId
+      type: object
+    merchant:
+      allOf:
+      - $ref: '#/components/schemas/merchantIdentifier'
+      - $ref: '#/components/schemas/merchant_allOf'
+      description: |
+        Details of the merchant.
+    merchantAddress:
+      description: |
+        The merchant's address.
+      properties:
+        line1:
+          description: |
+            Line 1 of the address
+          example: Worldpay
+          maxLength: 140
+          minLength: 1
+          type: string
+        line2:
+          description: |
+            Line 2 of the address
+          example: The Walbrook Building
+          maxLength: 140
+          minLength: 1
+          type: string
+        line3:
+          description: |
+            Line 3 of the address
+          example: "25, Walbrook"
+          maxLength: 140
+          minLength: 1
+          type: string
+        city:
+          description: |
+            City of the address
+          example: City of London
+          maxLength: 140
+          minLength: 1
+          type: string
+        state:
+          description: |
+            State/County/Region of the address
+          example: Greater London
+          maxLength: 140
+          minLength: 1
+          type: string
+        postalCode:
+          description: |
+            Postal code (Post/Zip code) of the address
+          example: EC4N 8AF
+          maxLength: 8
+          minLength: 1
+          type: string
+        countryCode:
+          description: |
+            The 2-letter ISO-3166-1 country code of the address
+          example: GB
+          maxLength: 2
+          minLength: 2
+          type: string
+      type: object
+    paymentResultType:
+      description: |
+        The type of payment that was requested. * `sale` - *Authorise and settle a payment from a customer for goods/services.* * `refund` - *Authorise and settle a payment to a customer for the return of goods/services.* * `pre-auth` - *Authorise a payment from a customer, but settle the payment separately using the `payment/settle` channel.* * `check-card` - *Check and retrieve details of the customer's card, without taking a payment.* * `check-card-payment` - *Check and retrieve details of the customer's card, and wait for the payment request on this card.* * `cancel` - *The cancellation of a previously requested `sale`, `refund`, or `pre-auth`.* * `settle` - *The settlement of a previously requested `pre-auth`.*
+      enum:
+      - sale
+      - refund
+      - pre-auth
+      - check-card
+      - check-card-payment
+      - cancel
+      - settle
+      type: string
+    merchantTransactionReference:
+      description: |
+        The transaction reference defined by the merchant to uniquely identify the payment. Must contain only alpha numeric, hypen (-) and underscore (_) characters.
+      example: MS_123-A54B3DF
+      maxLength: 30
+      minLength: 1
+      pattern: "^[a-zA-Z0-9_\\\\-]{1,30}$"
+      type: string
+    billNumberReference:
+      description: |
+        The bill number reference defined by the merchant to uniquely identify the bill.
+      example: OR_123-A54B3DF
+      maxLength: 30
+      minLength: 1
+      pattern: "^[a-zA-Z0-9_-]{1,30}$"
+      type: string
+    billTagReference:
+      description: |
+        The bill tag reference defined by the merchant to uniquely identify the bill with reference to tag say - table or room or invoice.
+      example: TABLE-11 or ROOM-101
+      maxLength: 30
+      minLength: 1
+      pattern: "^[a-zA-Z0-9_-]{1,30}$"
+      type: string
+    paymentInstrumentOutputAlipayBarcode:
+      description: |
+        Details for a Alipay barcode payment instrument. This payment instrument is supported for `sale` and `refund` payment types.
+      properties:
+        type:
+          description: |
+            The type of payment instrument. This will also dictate which other payment instrument fields are required to fulfil the payment.
+          enum:
+          - alipay/barcode
+          type: string
+        barcode:
+          description: |
+            The barcode value generated by the customer's Alipay app and scanned by the merchant.
+          example: "123456781234567812345678"
+          maxLength: 24
+          minLength: 16
+          pattern: "^[0-9]{16,24}$"
+          type: string
+      required:
+      - barcode
+      - type
+      type: object
+    paymentInstrumentOutputCard:
+      description: |
+        Details for a card-based payment instrument. This payment instrument is supported for `sale`, `refund`, `pre-auth`, `check-card` and `check-card-payment` payment types. #        This payment instrument is supported for `sale`, `refund`, `pre-auth`, `check-card`, #        `check-card-payment`, `account-verification` and `account-payment` payment types.
+      properties:
+        type:
+          description: |
+            The type of payment instrument. This will also dictate which other payment instrument fields are required to fulfil the payment.
+          enum:
+          - card/present
+          - card/keyed
+          - card/not-present
+          - card/token
+          type: string
+        card:
+          $ref: '#/components/schemas/paymentCard'
+        posEntryMode:
+          description: |
+            The method of reading the card. The current possible values are: * `keyed` * `magstripe` * `integrated-circuit-chip` * `contactless-chip` * `contactless-magstripe` * `contactless-on-device` * `cardholder-not-present` New values may be added in future without a software release.
+          example: contactless-chip
+          pattern: "^[a-zA-Z0-9\\-]{1,50}$"
+          type: string
+        cardVerificationMethod:
+          description: |
+            The verification method used for the cardholder. The current possible values are: * `signature` * `pin-or-consumer-device` * `pin-and-signature` * `cardholder-not-present` * `none` * `unknown` New values may be added in future without a software release.
+          example: pin-or-consumer-device
+          pattern: "^[a-zA-Z0-9\\-]{1,50}$"
+          type: string
+        isHandledOnline:
+          description: |
+            Indicates whether the payment should be, or has been, performed online or not.
+          example: true
+          type: boolean
+        authorisation:
+          $ref: '#/components/schemas/paymentInstrumentOutputCard_authorisation'
+        debug:
+          $ref: '#/components/schemas/paymentInstrumentOutputCard_debug'
+      required:
+      - type
+      type: object
+    paymentCard:
+      description: |
+        Data for the card used in the payment.
+      properties:
+        tokenId:
+          description: |
+            A token representing a card used in a payment. This will be returned in the result of a card payment if tokenisation is enabled, and can be sent in the request for payment with a `card/token` payment instrument. The following token formats are supported: * **Alphanumeric token** – this token uses an alternating sequence of upper case letters and numbers, and is always 15 digits long. The letters I and O are never used due to their similarity with numbers. Useful if you do not require a numeric token, and prefer the token  to be clearly distinguished from card numbers. * **Wrapped luhn fail token** – this token consists of between 16 and 21 digits, and the first two digits are always 99. These tokens will not pass through luhn (modulus 10) checks. Useful if you want to avoid possible issues with regard to PCI DSS compliance checks, because tokens will not be mistaken for a card number. * **Wrapped luhn pass token** – this token consists of between 16 and 21 digits, and the first two digits are always 99. These tokens will pass through luhn (modulus 10) checks. Useful if you have system validation that requires your token to be similar to a card number. * **Format preserving token** – this token uses a part of the card number used to create it, and is always 20 digits long. The first two digits are always 99. The next six digits are the first six numbers on the card used. The final four digits are the last four numbers on the card used.
+          example: 532931432DB44ABB5
+          maxLength: 21
+          minLength: 15
+          pattern: "^[0-9a-zA-Z]{15,21}$"
+          type: string
+        cardNumber:
+          description: |
+            The Primary Account Number of the card. For whitelisted cards the full card number can be returned, for all other cards the number is masked. The first 6 digits and last 4 digits are returned, the middle digits are replaced by `X`.
+          example: 492949XXXXXX0002
+          maxLength: 19
+          minLength: 13
+          pattern: "^[0-9]{6}[X0-9]{3,9}[0-9]{4}$"
+          type: string
+        expiryDate:
+          $ref: '#/components/schemas/cardDate'
+        track2Data:
+          description: |
+            The Track 2 data of the card as defined by ISO 7813. Available for whitelisted BIN ranges for `check-card` and `check-card-payment` transactions.
+          example: ;1234567890123445=99011200XXXX00000000?*
+          maxLength: 40
+          minLength: 7
+          pattern: "^\\;([0-9]{1,19})\\=([0-9]{4}|\\=)([0-9]{3}|\\=)([^\\?]+)\\?$"
+          type: string
+        type:
+          $ref: '#/components/schemas/cardType'
+        issuerCode:
+          description: |
+            A reference which can be used to identify the issuer of card. ##### Major card schemes * `amex` - *Amex*
+            * `bank-of-america` - *Bank of America*
+            * `dankort` - *DANKORT*
+            * `diners` - *Diners Club International*
+            * `discover` - *Discover*
+            * `jcb` - *JCB*
+            * `maestro-uk` - *UK Maestro*
+            * `maestro` - *Maestro*
+            * `mastercard-debit` - *Debit Mastercard*
+            * `mastercard-purchasing` - *Mastercard Purchasing*
+            * `mastercard` - *Mastercard*
+            * `us-debit` - *US Debit*
+            * `visa-debit` - *VISA DEBIT*
+            * `visa-electron-uk` - *UK Electron*
+            * `visa-purchasing` - *Visa Purchasing*
+            * `visa` - *Visa*
+            * `visa-atm` - *VISA ATM* ##### Store cards and gift cards * `arval-phh` - *ARVAL PHH*
+            * `flexecash-love-2-reward` - *Flexecash Love 2 Reward*
+            * `harvey-nichols` - *HN PLCC*
+            * `harvey-nichols-mastercard` - *HN Mastercard*
+            * `newday-mastercard` - *Newday MasterCard*
+            * `newday-staff` - *Newday Staff Card*
+            * `newday-store` - *Newday Store PLC*
+            * `newday-temporary` - *Newday Temporary*
+            * `pps-gift` - *PPS Gift Card*
+            * `tesco-clubcard` - *Tesco Clubcard* New values may be added without a software release.
+          example: visa-debit
+          maxLength: 256
+          minLength: 1
+          pattern: "^[a-zA-Z0-9\\-]{1,256}$"
+          type: string
+        countryCode:
+          description: |
+            The 3-digit numeric ISO 3166 code for the country the card was issued in.
+          example: "826"
+          maxLength: 3
+          minLength: 3
+          pattern: "^[0-9]{3}$"
+          type: string
+        panSequenceNumber:
+          description: |
+            The PAN Sequence number for ICC payments, and the card's issue number for swiped UK Maestro/Solo card payments.
+          example: "01"
+          maxLength: 2
+          minLength: 2
+          pattern: "^[0-9]{2}$"
+          type: string
+        applicationLabel:
+          description: |
+            The mnemonic associated with the application ID (AID) of the card used for the payment according to ISO/IEC 7816-5.
+          example: VISA BARCLAYCARD
+          maxLength: 16
+          minLength: 1
+          type: string
+        applicationIdentifier:
+          description: |
+            The application ID (AID) of the card used for the payment according to ISO/IEC 7816-5.
+
+            *Note – For VISA Contactless Cards, truncated EMV Card Data Element Application Identifier (AID) will be received instead Extended AID.*
+          example: A0000000031010
+          maxLength: 32
+          minLength: 10
+          pattern: "^[A-Z0-9]{10,32}$"
+          type: string
+        applicationEffectiveDate:
+          description: |
+            The date from which the application can be used. Represented as a full-date according to RFC 3339, section 5.6.
+          format: date
+          type: string
+      type: object
+    amount:
+      description: |
+        An amount of money in minor currency units.
+      example: 1099
+      format: int64
+      maximum: 999999999
+      minimum: 0
+      type: integer
+    currencyCode:
+      description: |
+        The 3-letter ISO 4217 currency code which amounts are specified in.
+      example: GBP
+      maxLength: 3
+      minLength: 3
+      type: string
+    transactionOnlineIndicator:
+      description: |
+        Indicates whether the payment should be, or has been, performed online or not.
+      example: true
+      type: boolean
+    transactionResultCode:
+      description: |
+        The code representing the result of payment request.
+      enum:
+      - authorised-online
+      - authorised-offline
+      - authorised-referral
+      - keyed-recovery-success
+      - pre-auth-completed
+      - succeeded
+      - refused-online
+      - refused-offline
+      - refused-online-capture-card
+      - refused-avs-required
+      - cancelled
+      - aborted
+      - aborted-device-unavailable
+      - aborted-busy
+      - started
+      - in-progress
+      - auth-completed
+      - rejected-pre-auth
+      - rejected-card-number-not-matched
+      - rejected-card-expiry-date-not-matched
+      - rejected-card-not-accepted
+      - invalid-transaction-state
+      - invalid-operation
+      - invalid-gateway-transactions-reference
+      - invalid-merchant
+      - invalid-terminal
+      - invalid-merchant-status
+      - invalid-card-number
+      - invalid-expired-card
+      - invalid-issue-number
+      - invalid-card-expiry-date
+      - denied-transaction
+      - denied-cashback
+      - pre-valid-card
+      - failed
+      type: string
+    posEntryMode:
+      description: |
+        The method of reading the card. The current possible values are: * `keyed` * `magstripe` * `integrated-circuit-chip` * `contactless-chip` * `contactless-magstripe` * `contactless-on-device` * `cardholder-not-present` New values may be added in future without a software release.
+      example: contactless-chip
+      pattern: "^[a-zA-Z0-9\\-]{1,50}$"
+      type: string
+    cardVerificationMethod:
+      description: |
+        The verification method used for the cardholder. The current possible values are: * `signature` * `pin-or-consumer-device` * `pin-and-signature` * `cardholder-not-present` * `none` * `unknown` New values may be added in future without a software release.
+      example: pin-or-consumer-device
+      pattern: "^[a-zA-Z0-9\\-]{1,50}$"
+      type: string
+    transactionDateTime:
+      description: |
+        The date-time at which the transaction was processed. Represented as a date-time according to RFC 3339, section 5.6, including the relevant time zone.
+      format: date-time
+      type: string
+    authorisationCode:
+      description: |
+        The authorisation code generated by the issuer for an authorised payment.
+      example: "12345"
+      maxLength: 6
+      minLength: 2
+      pattern: "^[0-9a-zA-Z]{2,6}$"
+      type: string
+    cardToken:
+      description: |
+        A token representing a card used in a payment. This will be returned in the result of a card payment if tokenisation is enabled, and can be sent in the request for payment with a `card/token` payment instrument. The following token formats are supported: * **Alphanumeric token** – this token uses an alternating sequence of upper case letters and numbers, and is always 15 digits long. The letters I and O are never used due to their similarity with numbers. Useful if you do not require a numeric token, and prefer the token  to be clearly distinguished from card numbers. * **Wrapped luhn fail token** – this token consists of between 16 and 21 digits, and the first two digits are always 99. These tokens will not pass through luhn (modulus 10) checks. Useful if you want to avoid possible issues with regard to PCI DSS compliance checks, because tokens will not be mistaken for a card number. * **Wrapped luhn pass token** – this token consists of between 16 and 21 digits, and the first two digits are always 99. These tokens will pass through luhn (modulus 10) checks. Useful if you have system validation that requires your token to be similar to a card number. * **Format preserving token** – this token uses a part of the card number used to create it, and is always 20 digits long. The first two digits are always 99. The next six digits are the first six numbers on the card used. The final four digits are the last four numbers on the card used.
+      example: 532931432DB44ABB5
+      maxLength: 21
+      minLength: 15
+      pattern: "^[0-9a-zA-Z]{15,21}$"
+      type: string
+    alipayBarcode:
+      description: |
+        The barcode value generated by the customer's Alipay app and scanned by the merchant.
+      example: "123456781234567812345678"
+      maxLength: 24
+      minLength: 16
+      pattern: "^[0-9]{16,24}$"
+      type: string
+    cardNumber:
+      description: |
+        The Primary Account Number of the card. For whitelisted cards the full card number can be returned, for all other cards the number is masked. The first 6 digits and last 4 digits are returned, the middle digits are replaced by `X`.
+      example: 492949XXXXXX0002
+      maxLength: 19
+      minLength: 13
+      pattern: "^[0-9]{6}[X0-9]{3,9}[0-9]{4}$"
+      type: string
+    track2Data:
+      description: |
+        The Track 2 data of the card as defined by ISO 7813. Available for whitelisted BIN ranges for `check-card` and `check-card-payment` transactions.
+      example: ;1234567890123445=99011200XXXX00000000?*
+      maxLength: 40
+      minLength: 7
+      pattern: "^\\;([0-9]{1,19})\\=([0-9]{4}|\\=)([0-9]{3}|\\=)([^\\?]+)\\?$"
+      type: string
+    cardDate:
+      description: |
+        The date (month and year) associated with the card.
+      properties:
+        month:
+          example: 12
+          format: int32
+          maximum: 12
+          minimum: 1
+          type: integer
+        year:
+          example: 20
+          format: int32
+          maximum: 99
+          minimum: 0
+          type: integer
+      required:
+      - month
+      - year
+      type: object
+    cardType:
+      description: |
+        Indicator for the type of card. The current possible values, omitted if the card type is unknown.
+      enum:
+      - fuel
+      - debit
+      - credit
+      example: debit
+      type: string
+    cardIssuerCode:
+      description: |
+        A reference which can be used to identify the issuer of card. ##### Major card schemes * `amex` - *Amex*
+        * `bank-of-america` - *Bank of America*
+        * `dankort` - *DANKORT*
+        * `diners` - *Diners Club International*
+        * `discover` - *Discover*
+        * `jcb` - *JCB*
+        * `maestro-uk` - *UK Maestro*
+        * `maestro` - *Maestro*
+        * `mastercard-debit` - *Debit Mastercard*
+        * `mastercard-purchasing` - *Mastercard Purchasing*
+        * `mastercard` - *Mastercard*
+        * `us-debit` - *US Debit*
+        * `visa-debit` - *VISA DEBIT*
+        * `visa-electron-uk` - *UK Electron*
+        * `visa-purchasing` - *Visa Purchasing*
+        * `visa` - *Visa*
+        * `visa-atm` - *VISA ATM* ##### Store cards and gift cards * `arval-phh` - *ARVAL PHH*
+        * `flexecash-love-2-reward` - *Flexecash Love 2 Reward*
+        * `harvey-nichols` - *HN PLCC*
+        * `harvey-nichols-mastercard` - *HN Mastercard*
+        * `newday-mastercard` - *Newday MasterCard*
+        * `newday-staff` - *Newday Staff Card*
+        * `newday-store` - *Newday Store PLC*
+        * `newday-temporary` - *Newday Temporary*
+        * `pps-gift` - *PPS Gift Card*
+        * `tesco-clubcard` - *Tesco Clubcard* New values may be added without a software release.
+      example: visa-debit
+      maxLength: 256
+      minLength: 1
+      pattern: "^[a-zA-Z0-9\\-]{1,256}$"
+      type: string
+    cardCountryCode:
+      description: |
+        The 3-digit numeric ISO 3166 code for the country the card was issued in.
+      example: "826"
+      maxLength: 3
+      minLength: 3
+      pattern: "^[0-9]{3}$"
+      type: string
+    panSequenceNumber:
+      description: |
+        The PAN Sequence number for ICC payments, and the card's issue number for swiped UK Maestro/Solo card payments.
+      example: "01"
+      maxLength: 2
+      minLength: 2
+      pattern: "^[0-9]{2}$"
+      type: string
+    applicationLabel:
+      description: |
+        The mnemonic associated with the application ID (AID) of the card used for the payment according to ISO/IEC 7816-5.
+      example: VISA BARCLAYCARD
+      maxLength: 16
+      minLength: 1
+      type: string
+    applicationIdentifier:
+      description: |
+        The application ID (AID) of the card used for the payment according to ISO/IEC 7816-5.
+
+        *Note – For VISA Contactless Cards, truncated EMV Card Data Element Application Identifier (AID) will be received instead Extended AID.*
+      example: A0000000031010
+      maxLength: 32
+      minLength: 10
+      pattern: "^[A-Z0-9]{10,32}$"
+      type: string
+    applicationEffectiveDate:
+      description: |
+        The date from which the application can be used. Represented as a full-date according to RFC 3339, section 5.6.
+      format: date
+      type: string
+    eftSequenceNumber:
+      description: |
+        The transaction sequence number.
+      format: int64
+      minimum: 1
+      type: integer
+    paymentGatewayTransactionReference:
+      description: |
+        The transaction reference generated by the payment gateway to uniquely identify the payment. This will be available for any payment which has been processed online.
+      example: 1234567890AB
+      maxLength: 22
+      minLength: 12
+      pattern: "^[a-zA-Z0-9]{12,22}$"
+      type: string
+    transactionStatusInfo:
+      description: |
+        Transaction Status Information (TSI), present only in case of an ICC payment. Used for debug purpose only.
+      example: F800
+      maxLength: 4
+      minLength: 1
+      pattern: "^[0-9A-F]{1,4}$"
+      type: string
+    transactionVerificationResults:
+      description: |
+        Transaction Verification Results (TVR), present only in case of an ICC payment. Used for debug purpose only.
+      example: "4000008000"
+      maxLength: 10
+      minLength: 1
+      pattern: "^[0-9A-F]{1,10}$"
+      type: string
+    cvvResponseData:
+      description: |
+        Additional response data containing the CVV response.
+      example: "422800"
+      maxLength: 6
+      minLength: 6
+      pattern: "^[0-9A-F]{6}$"
+      type: string
+    receiptNumber:
+      description: |
+        The number of the receipt to be issued.
+      format: int64
+      maximum: 9999999999
+      minimum: 1
+      type: integer
+    retrievalReferenceNumber:
+      description: |
+        The retrieval reference number for the transaction.
+      format: int64
+      maximum: 9999999999
+      minimum: 1
+      type: integer
+    receiptText:
+      description: |
+        Text that can be displayed on a receipt.
+      maxLength: 50
+      minLength: 1
+      type: string
+    dccConversionRate:
+      description: |
+        The conversion rate from the merchant's currency to the cardholder's local currency.
+      example: 1.11647
+      format: double
+      minimum: 0
+      type: number
+    voucherContent:
+      description: |
+        Base64 representation of the UTF-8 encoded content of the voucher. The first 2 characters of each line a print command, followed by the text to print. The print commands are: * `01` - *Print the Premier taxfree logo bitmap* * `02` - *Print large bold text, followed by a carriage return*
+        * `03` - *Print large underlined text, followed by a carriage return*
+        * `04` - *Print normal underlined text, followed by a carriage return*
+        * `05` - *Print normal text, followed by a carriage return*
+        * `06` - *Print normal sized bold text, followed by a carriage return*
+        * `07` - *Print normal sized wide text, followed by a carriage return*
+        * `08` - *Print normal right aligned text, followed by a carriage return*
+        * `09` - *Print normal centre aligned text, followed by a carriage return*
+        * `10` - *Print large bold centered text, followed by a carriage return*
+        * `11` - *Print the data as a 'Interleaved 2 of 5' barcode*
+        * `12` - *Print carriage return*
+        * `13` - *Auto cut paper*
+        * `50` - *Load another voucher*
+        * `51` - *Print copy*
+        * `61` - *The remainder of the text after the print code is encrypted and
+          base64 encoded. Decrypt it and then print normal text, followed by a carriage return*
+      example: MDEKMDJWT1VDSEVSCjEyCjA2RVhBTVBMRSBDT05URU5UCjEz
+      type: string
+    paymentDetails:
+      description: |
+        Full details of a completed payment.
+      example:
+        receiptCustomerDeclaration: receiptCustomerDeclaration
+        merchantTransactionReference: MS_123-A54B3DF
+        transactionDateTime: 2000-01-23T04:56:07.000+00:00
+        taxFreeVoucher: MDEKMDJWT1VDSEVSCjEyCjA2RVhBTVBMRSBDT05URU5UCjEz
+        merchant: null
+        retrievalReferenceNumber: 6027456182
+        paymentInstrument: null
+        paymentType: null
+        result: null
+        paypoint:
+          terminalId: "987654321"
+          paypointId: ""
+        gatewayTransactionReference: 1234567890AB
+        eftSequenceNumber: 1
+        value:
+          amount: 1099
+          dcc:
+            convertedAmount: 1099
+            convertedCurrencyCode: GBP
+            conversionRate: 1.11647
+          cashbackAmount: 1099
+          currencyCode: GBP
+          donationAmount: 1099
+          gratuityAmount: 1099
+        receiptRetentionReminder: receiptRetentionReminder
+        receiptNumber: 1465812981
+      properties:
+        paymentType:
+          $ref: '#/components/schemas/paymentResultType'
+        transactionDateTime:
+          description: |
+            The date-time at which the transaction was processed. Represented as a date-time according to RFC 3339, section 5.6, including the relevant time zone.
+          format: date-time
+          type: string
+        result:
+          $ref: '#/components/schemas/transactionResultCode'
+        merchant:
+          $ref: '#/components/schemas/merchant'
+        paypoint:
+          $ref: '#/components/schemas/paypoint'
+        value:
+          $ref: '#/components/schemas/paymentDetails_value'
+        merchantTransactionReference:
+          description: |
+            The transaction reference defined by the merchant to uniquely identify the payment. Must contain only alpha numeric, hypen (-) and underscore (_) characters.
+          example: MS_123-A54B3DF
+          maxLength: 30
+          minLength: 1
+          pattern: "^[a-zA-Z0-9_\\\\-]{1,30}$"
+          type: string
+        gatewayTransactionReference:
+          description: |
+            The transaction reference generated by the payment gateway to uniquely identify the payment. This will be available for any payment which has been processed online.
+          example: 1234567890AB
+          maxLength: 22
+          minLength: 12
+          pattern: "^[a-zA-Z0-9]{12,22}$"
+          type: string
+        eftSequenceNumber:
+          description: |
+            The transaction sequence number.
+          format: int64
+          minimum: 1
+          type: integer
+        retrievalReferenceNumber:
+          description: |
+            The retrieval reference number for the transaction.
+          format: int64
+          maximum: 9999999999
+          minimum: 1
+          type: integer
+        receiptNumber:
+          description: |
+            The number of the receipt to be issued.
+          format: int64
+          maximum: 9999999999
+          minimum: 1
+          type: integer
+        receiptRetentionReminder:
+          description: |
+            Text that can be displayed on a receipt.
+          maxLength: 50
+          minLength: 1
+          type: string
+        receiptCustomerDeclaration:
+          description: |
+            Text that can be displayed on a receipt.
+          maxLength: 50
+          minLength: 1
+          type: string
+        taxFreeVoucher:
+          description: |
+            Base64 representation of the UTF-8 encoded content of the voucher. The first 2 characters of each line a print command, followed by the text to print. The print commands are: * `01` - *Print the Premier taxfree logo bitmap* * `02` - *Print large bold text, followed by a carriage return*
+            * `03` - *Print large underlined text, followed by a carriage return*
+            * `04` - *Print normal underlined text, followed by a carriage return*
+            * `05` - *Print normal text, followed by a carriage return*
+            * `06` - *Print normal sized bold text, followed by a carriage return*
+            * `07` - *Print normal sized wide text, followed by a carriage return*
+            * `08` - *Print normal right aligned text, followed by a carriage return*
+            * `09` - *Print normal centre aligned text, followed by a carriage return*
+            * `10` - *Print large bold centered text, followed by a carriage return*
+            * `11` - *Print the data as a 'Interleaved 2 of 5' barcode*
+            * `12` - *Print carriage return*
+            * `13` - *Auto cut paper*
+            * `50` - *Load another voucher*
+            * `51` - *Print copy*
+            * `61` - *The remainder of the text after the print code is encrypted and
+              base64 encoded. Decrypt it and then print normal text, followed by a carriage return*
+          example: MDEKMDJWT1VDSEVSCjEyCjA2RVhBTVBMRSBDT05URU5UCjEz
+          type: string
+        paymentInstrument:
+          $ref: '#/components/schemas/paymentDetails_paymentInstrument'
+      required:
+      - merchantTransactionReference
+      - paymentType
+      - result
+      - transactionDateTime
+      type: object
+    errors:
+      allOf:
+      - $ref: '#/components/schemas/error'
+      properties:
+        validationErrors:
+          description: A list of validation errors
+          items:
+            $ref: '#/components/schemas/validationError'
+          type: array
+      type: object
+    error:
+      properties:
+        errorName:
+          description: A machine and human readable error type for clarity and semantic
+            understanding of the error.
+          type: string
+        message:
+          description: A human readable message giving a corrective action for the
+            error. This is not for machine consumption.
+          type: string
+      required:
+      - errorName
+      - message
+      type: object
+    validationError:
+      allOf:
+      - $ref: '#/components/schemas/error'
+      properties:
+        jsonPath:
+          description: This field represents the JSONPath  of the element within the
+            request body associated with the error
+          type: string
+        pathParameter:
+          description: This field identifies a path parameter within the request URL
+            that caused an error - e.g. a resource reference
+          type: string
+        queryParameter:
+          description: This field represents the name of a query parameter within
+            the request URL that caused the error
+          type: string
+      type: object
+    userReference:
+      description: |
+        The userId defined by the merchant to uniquely identify  user. Must contain only alpha numeric, hypen (-) and underscore (_) characters.
+      example: user_123-A54B3DF
+      maxLength: 30
+      minLength: 1
+      pattern: "^[a-zA-Z0-9_-]{1,30}$"
+      type: string
+    billDateTime:
+      description: |
+        The most recent date-time asociated with the bill. Represented as a date-time according to RFC 3339, section 5.6, including the relevant time zone.
+      format: date-time
+      type: string
+    billStatus:
+      description: "All possible values for bill.\n\n`ready` - used to get the bill\
+        \ from order management \n\n`pending` - once bill is open to be processed\n\
+        \n`in-progress` - used to update once bill is picked-up for payment.\n\n`complete`\
+        \ - once bill is completely paid\n\n`partial-complete` - if bill is partially\
+        \ paid(in split payment) and wants to pay to the counter OR customer wants\
+        \ to update the bill in un-happy path\n\n`cancel` - to cancel a bill\n"
+      enum:
+      - in-progress
+      - partial-complete
+      - pending
+      - complete
+      - cancel
+      - ready
+      type: string
+    listBills_billStatus_parameter_inner:
+      default: pending
+      oneOf:
+      - $ref: '#/components/schemas/billStatus'
+      type: string
+    merchant_allOf:
+      description: |
+        Full details of the merchant.
+      properties:
+        name:
+          description: |
+            The merchant's name.
+          example: Worldpay
+          maxLength: 40
+          minLength: 1
+          type: string
+        address:
+          $ref: '#/components/schemas/merchantAddress'
+      type: object
+      example: null
+    paymentInstrumentOutputCard_authorisation:
+      description: |
+        Data for the authorisation of the payment.
+      properties:
+        authorisationCode:
+          description: |
+            The authorisation code generated by the issuer for an authorised payment.
+          example: "12345"
+          maxLength: 6
+          minLength: 2
+          pattern: "^[0-9a-zA-Z]{2,6}$"
+          type: string
+        cvvResponseData:
+          description: |
+            Additional response data containing the CVV response.
+          example: "422800"
+          maxLength: 6
+          minLength: 6
+          pattern: "^[0-9A-F]{6}$"
+          type: string
+      type: object
+    paymentInstrumentOutputCard_debug:
+      properties:
+        transactionStatusInfo:
+          description: |
+            Transaction Status Information (TSI), present only in case of an ICC payment. Used for debug purpose only.
+          example: F800
+          maxLength: 4
+          minLength: 1
+          pattern: "^[0-9A-F]{1,4}$"
+          type: string
+        transactionVerificationResults:
+          description: |
+            Transaction Verification Results (TVR), present only in case of an ICC payment. Used for debug purpose only.
+          example: "4000008000"
+          maxLength: 10
+          minLength: 1
+          pattern: "^[0-9A-F]{1,10}$"
+          type: string
+      type: object
+    paymentDetails_value_dcc:
+      description: |
+        Data for Dynamic Currency Conversion if relevant to the payment.
+      example:
+        convertedAmount: 1099
+        convertedCurrencyCode: GBP
+        conversionRate: 1.11647
+      properties:
+        convertedCurrencyCode:
+          description: |
+            The 3-letter ISO 4217 currency code which amounts are specified in.
+          example: GBP
+          maxLength: 3
+          minLength: 3
+          type: string
+        convertedAmount:
+          description: |
+            An amount of money in minor currency units.
+          example: 1099
+          format: int64
+          maximum: 999999999
+          minimum: 0
+          type: integer
+        conversionRate:
+          description: |
+            The conversion rate from the merchant's currency to the cardholder's local currency.
+          example: 1.11647
+          format: double
+          minimum: 0
+          type: number
+      required:
+      - conversionRate
+      - convertedAmount
+      - convertedCurrencyCode
+      type: object
+    paymentDetails_value:
+      description: |
+        The monetary value of the payment.
+      example:
+        amount: 1099
+        dcc:
+          convertedAmount: 1099
+          convertedCurrencyCode: GBP
+          conversionRate: 1.11647
+        cashbackAmount: 1099
+        currencyCode: GBP
+        donationAmount: 1099
+        gratuityAmount: 1099
+      properties:
+        amount:
+          description: |
+            An amount of money in minor currency units.
+          example: 1099
+          format: int64
+          maximum: 999999999
+          minimum: 0
+          type: integer
+        currencyCode:
+          description: |
+            The 3-letter ISO 4217 currency code which amounts are specified in.
+          example: GBP
+          maxLength: 3
+          minLength: 3
+          type: string
+        cashbackAmount:
+          description: |
+            An amount of money in minor currency units.
+          example: 1099
+          format: int64
+          maximum: 999999999
+          minimum: 0
+          type: integer
+        gratuityAmount:
+          description: |
+            An amount of money in minor currency units.
+          example: 1099
+          format: int64
+          maximum: 999999999
+          minimum: 0
+          type: integer
+        donationAmount:
+          description: |
+            An amount of money in minor currency units.
+          example: 1099
+          format: int64
+          maximum: 999999999
+          minimum: 0
+          type: integer
+        dcc:
+          $ref: '#/components/schemas/paymentDetails_value_dcc'
+      required:
+      - amount
+      - currencyCode
+      type: object
+    paymentDetails_paymentInstrument:
+      description: |
+        The method by which the payment was made.
+      oneOf:
+      - $ref: '#/components/schemas/paymentInstrumentOutputCard'
+      - $ref: '#/components/schemas/paymentInstrumentOutputAlipayBarcode'
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
