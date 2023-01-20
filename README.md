@@ -1,0 +1,1 @@
+# pay-table-stub
