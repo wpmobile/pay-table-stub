@@ -23,8 +23,9 @@ class BillsApiController() {
 
     private val bill1 = BillDetails(BillStatus.ready, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
     private val bill1pending = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
-    private val bill2 = BillDetails(BillStatus.ready, "1235", "Table2", 1200L, itemizedBill = "Pizza")
-    private val bill3 = BillDetails(BillStatus.ready, "1235", "Table3", 1200L, itemizedBill = "Pizza")
+    private val bill2 = BillDetails(BillStatus.ready, "2345", "Table2", 1200L, itemizedBill = "Pizza")
+    private val bill3 = BillDetails(BillStatus.ready, "3456", "Table3", 1200L, itemizedBill = "Pizza")
+    private val bill3Pending = BillDetails(BillStatus.pending, "3456", "Table3", -1200L, "Pizza")
 
     @Operation(
         summary = "Create a new Bill",
@@ -178,7 +179,7 @@ class BillsApiController() {
         @Parameter(description = "All possible values for bill.  `ready` - used to get the bill from order management   `pending` - once bill is open to be processed  `in-progress` - used to update once bill is picked-up for payment.  `complete` - once bill is completely paid  `partial-complete` - if bill is partially paid(in split payment) and wants to pay to the counter OR customer wants to update the bill in un-happy path  `cancel` - to cancel a bill ") @Valid @RequestParam(
             value = "billStatus",
             required = false
-        ) billStatus: BillStatus?,
+        ) billStatus: BillStatus? = BillStatus.ready,
         @Pattern(regexp = "^[a-zA-Z0-9_-]{1,30}$") @Size(
             min = 1,
             max = 30
@@ -191,7 +192,7 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<List<BillDetails>> {
-        return ResponseEntity(listOf(bill1, bill2), null, HttpStatus.OK)
+        return ResponseEntity(listOf(bill1, bill1pending, bill2, bill3, bill3Pending).filter { it.status == billStatus }, null, HttpStatus.OK)
     }
 
     @Operation(
