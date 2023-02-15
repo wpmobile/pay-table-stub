@@ -25,7 +25,7 @@ class BillsApiController() {
     private val bill1pending = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
     private val bill2 = BillDetails(BillStatus.ready, "2345", "Table2", 1200L, itemizedBill = "Pizza")
     private val bill3 = BillDetails(BillStatus.ready, "3456", "Table3", 1200L, itemizedBill = "Pizza")
-    private val bill3Pending = BillDetails(BillStatus.pending, "3456", "Table3", -1200L, "Pizza")
+    private val bill3Pending = BillDetails(BillStatus.pending, "3456", "Table3", -1200L, itemizedBill = "Pizza")
 
     @Operation(
         summary = "Create a new Bill",
