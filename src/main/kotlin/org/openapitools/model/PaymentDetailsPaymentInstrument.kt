@@ -70,7 +70,9 @@ data class PaymentDetailsPaymentInstrument(
     */
     enum class Type(val value: kotlin.String) {
 
-        @JsonProperty("alipay/barcode") alipaySlashBarcode("alipay/barcode")
+        @JsonProperty("alipay/barcode") alipaySlashBarcode("alipay/barcode"),
+        @JsonProperty("card/not-present") cardNotPresent("card/not-present"),
+        @JsonProperty("card/present") cardPresent("card/present")
     }
 
 }
