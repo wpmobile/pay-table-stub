@@ -21,11 +21,9 @@ import javax.validation.constraints.Size
 @RequestMapping("\${api.base-path:}")
 class BillsApiController() {
 
-    private val bill1 = BillDetails(BillStatus.ready, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
-    private val bill1pending = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
-    private val bill2 = BillDetails(BillStatus.ready, "2345", "Table2", 1200L, itemizedBill = "Pizza")
-    private val bill3 = BillDetails(BillStatus.ready, "3456", "Table3", 1200L, itemizedBill = "Pizza")
-    private val bill3Pending = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza")
+    private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
+    private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
+    private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza")
 
     @Operation(
         summary = "Create a new Bill",
@@ -192,7 +190,7 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<List<BillDetails>> {
-        return ResponseEntity(listOf(bill1, bill1pending, bill2, bill3, bill3Pending).filter { it.status == billStatus }, null, HttpStatus.OK)
+        return ResponseEntity(listOf(bill1, bill2, bill3ToRefund).filter { it.status == billStatus }, null, HttpStatus.OK)
     }
 
     @Operation(
@@ -255,6 +253,6 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<BillDetails> {
-        return ResponseEntity(bill1pending, null, HttpStatus.CREATED)
+        return ResponseEntity(bill1, null, HttpStatus.CREATED)
     }
 }
