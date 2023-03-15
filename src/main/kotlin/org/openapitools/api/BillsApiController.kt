@@ -25,7 +25,7 @@ class BillsApiController() {
 
     private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Pizza")
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
-    private val billpaid = BillDetails(BillStatus.complete, "2345", "Table2", 1200L, itemizedBill = "Pizza", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
+    private val billpaid = BillDetails(BillStatus.complete, "234577", "Table8", 1200L, itemizedBill = "Pizza", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
         Merchant("111","1111"),Paypoint("1", "11111"))))
     private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza")
