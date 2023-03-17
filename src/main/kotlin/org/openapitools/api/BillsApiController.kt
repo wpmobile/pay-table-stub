@@ -23,7 +23,7 @@ import javax.validation.constraints.Size
 @RequestMapping("\${api.base-path:}")
 class BillsApiController() {
 
-    private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Burger               £5.00\nFries                £2.50\nCoke                 £2.50\n")
+    private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Burger               £5.00\nFries                £2.50\nCoke                 £2.50\nSubtotal                 £10.00\n")
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
     private val billpaid = BillDetails(BillStatus.complete, "234577", "Table8", 1200L, itemizedBill = "Pizza", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
