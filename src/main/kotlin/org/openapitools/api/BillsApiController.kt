@@ -133,7 +133,7 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<BillDetails> {
-        return ResponseEntity(bill1, null, HttpStatus.OK)
+        return ResponseEntity(billpaid, null, HttpStatus.OK)
     }
 
     @Operation(
