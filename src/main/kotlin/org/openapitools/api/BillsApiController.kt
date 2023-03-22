@@ -27,7 +27,7 @@ class BillsApiController() {
 
     private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Burger:£5.00;Fries:£3.00;Coke:£2.00;;Subtotal:£10.00;;Service not included")
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
-    private val billpaid = GetBillsResponse("123", "Table1", 1200, itemizedBill = "Pizza", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
+    private val billpaid = GetBillsResponse("123", "Table1", 1200, itemizedBill = "Pizza", status = BillStatus.complete.value, userId = "1", billDateTime = "Wed Oct 16 00:00:00 CEST 2013", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
         Merchant("111","1111"),Paypoint("1", "11111"))))
     private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza          £12.00")
@@ -197,7 +197,7 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<List<BillDetails>> {
-        return ResponseEntity(listOf(bill1, bill2, bill3ToRefund,billpaid).filter { it.status == billStatus }, null, HttpStatus.OK)
+        return ResponseEntity(listOf(bill1, bill2, bill3ToRefund).filter { it.status == billStatus }, null, HttpStatus.OK)
     }
 
     @Operation(
