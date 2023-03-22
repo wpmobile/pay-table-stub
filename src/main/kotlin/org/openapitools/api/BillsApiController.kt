@@ -27,7 +27,7 @@ class BillsApiController() {
 
     private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Burger:£5.00;Fries:£3.00;Coke:£2.00;;Subtotal:£10.00;;Service not included")
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
-    private val billpaid = GetBillsResponse("123", "Table1", 1200, itemizedBill = "Pizza", status = BillStatus.complete.value, userId = "1", billDateTime = "Wed Oct 16 00:00:00 CEST 2013", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
+    private val billpaid = BillDetails(billId = "123", billTag = "Table1", totalAmount = 1200L, itemizedBill = "Pizza", status = BillStatus.complete, userId = "1", billDateTime = OffsetDateTime.now(), paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
         Merchant("111","1111"),Paypoint("1", "11111"))))
     private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza          £12.00")
@@ -91,7 +91,7 @@ class BillsApiController() {
             ApiResponse(
                 responseCode = "200",
                 description = "successful operation",
-                content = [Content(schema = Schema(implementation = BillDetails::class))]
+                content = [Content(schema = Schema(implementation = GetBillsResponse::class))]
             ),
             ApiResponse(
                 responseCode = "400",
@@ -134,8 +134,8 @@ class BillsApiController() {
             description = "",
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
-    ): ResponseEntity<List<GetBillsResponse>> {
-        return ResponseEntity(listOf(billpaid), null, HttpStatus.OK)
+    ): ResponseEntity<BillDetails> {
+        return ResponseEntity(billpaid, null, HttpStatus.OK)
     }
 
     @Operation(
