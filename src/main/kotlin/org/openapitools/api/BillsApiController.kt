@@ -192,12 +192,25 @@ class BillsApiController() {
             value = "billTag",
             required = false
         ) billTag: kotlin.String?,
+        @Pattern(regexp = "^[a-zA-Z0-9_-]{1,30}$") @Size(
+            min = 1,
+            max = 30
+        ) @Parameter(
+            description = "Bill ID to be provided",
+            required = true
+        ) @PathVariable("billId") billId: kotlin.String,
         @Pattern(regexp = "^[a-zA-Z0-9_-]{1,30}$") @Size(min = 1, max = 30) @Parameter(
             description = "",
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<List<BillDetails>> {
-        return ResponseEntity(listOf(bill1, bill2, bill3ToRefund).filter { it.status == billStatus }, null, HttpStatus.OK)
+
+        return if(billId != null){
+            ResponseEntity(listOf(billpaid), null, HttpStatus.OK)
+
+        } else{
+            ResponseEntity(listOf(bill1, bill2, bill3ToRefund).filter { it.status == billStatus }, null, HttpStatus.OK)
+        }
     }
 
     @Operation(
