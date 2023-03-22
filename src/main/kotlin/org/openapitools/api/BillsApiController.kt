@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.util.logging.Logger
+import javax.smartcardio.Card
 import javax.validation.Valid
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
@@ -29,7 +30,8 @@ class BillsApiController() {
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
     private val billpaid = BillDetails(billId = "123", billTag = "Table1", totalAmount = 1200L, itemizedBill = "Pizza", status = BillStatus.complete, userId = "1", billDateTime = OffsetDateTime.now(), paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
-        Merchant("111","1111"),Paypoint("1", "11111"), value = PaymentDetailsValue(1000L,"GBP", 0, 0))))
+        Merchant("111","1111"),Paypoint("1", "11111"), value = PaymentDetailsValue(1000L,"GBP", 0, 0), paymentInstrument = PaymentDetailsPaymentInstrument(PaymentDetailsPaymentInstrument.Type.cardPresent,card = PaymentCard("111", cardNumber = "12000000000434", expiryDate = CardDate(10,25), type = CardType.credit, applicationLabel = "01", panSequenceNumber = "01"), barcode = "")
+    )))
     private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza          £12.00")
 
     @Operation(
