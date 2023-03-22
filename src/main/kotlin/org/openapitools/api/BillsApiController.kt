@@ -206,7 +206,7 @@ class BillsApiController() {
     ): ResponseEntity<List<BillDetails>> {
         println(billId)
         println("here")
-        return if(billId != null){
+        return if(billStatus == null){
             ResponseEntity(listOf(billpaid), null, HttpStatus.OK)
 
         } else{
