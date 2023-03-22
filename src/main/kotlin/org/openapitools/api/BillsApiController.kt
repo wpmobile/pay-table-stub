@@ -204,7 +204,8 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<List<BillDetails>> {
-
+        println(billId)
+        println("here")
         return if(billId != null){
             ResponseEntity(listOf(billpaid), null, HttpStatus.OK)
 
