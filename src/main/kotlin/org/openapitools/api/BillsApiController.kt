@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.apache.commons.logging.Log
 import org.openapitools.model.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.util.logging.Logger
 import javax.validation.Valid
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
@@ -25,7 +27,7 @@ class BillsApiController() {
 
     private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Burger:£5.00;Fries:£3.00;Coke:£2.00;;Subtotal:£10.00;;Service not included")
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
-    private val billpaid = BillDetails(BillStatus.complete, "234577", "Table8", 1200L, itemizedBill = "Pizza", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
+    private val billpaid = GetBillsResponse("123", "Table1", 1200, itemizedBill = "Pizza", paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
         Merchant("111","1111"),Paypoint("1", "11111"))))
     private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza          £12.00")
@@ -132,8 +134,8 @@ class BillsApiController() {
             description = "",
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
-    ): ResponseEntity<BillDetails> {
-        return ResponseEntity(billpaid, null, HttpStatus.OK)
+    ): ResponseEntity<List<GetBillsResponse>> {
+        return ResponseEntity(listOf(billpaid), null, HttpStatus.OK)
     }
 
     @Operation(
