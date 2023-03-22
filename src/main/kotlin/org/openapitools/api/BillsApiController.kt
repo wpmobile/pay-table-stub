@@ -198,7 +198,7 @@ class BillsApiController() {
         ) @Parameter(
             description = "Bill ID to be provided",
             required = true
-        ) @PathVariable("billId") billId: kotlin.String,
+        ) @PathVariable("billId", required = false) billId: kotlin.String,
         @Pattern(regexp = "^[a-zA-Z0-9_-]{1,30}$") @Size(min = 1, max = 30) @Parameter(
             description = "",
             `in` = ParameterIn.HEADER
