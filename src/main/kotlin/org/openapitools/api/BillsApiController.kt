@@ -29,7 +29,7 @@ class BillsApiController() {
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
     private val billpaid = BillDetails(billId = "123", billTag = "Table1", totalAmount = 1200L, itemizedBill = "Pizza", status = BillStatus.complete, userId = "1", billDateTime = OffsetDateTime.now(), paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
-        Merchant("111","1111"),Paypoint("1", "11111"))))
+        Merchant("111","1111"),Paypoint("1", "11111"), value = PaymentDetailsValue(1000L,"GBP", 0, 0))))
     private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza          £12.00")
 
     @Operation(
