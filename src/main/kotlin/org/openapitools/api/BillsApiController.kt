@@ -276,7 +276,7 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<BillDetails> {
-        billpaid.paymentDetails = updateBillRequest.paymentDetails
+        updateBillRequest.paymentDetails.takeIf { it.isNullOrEmpty().not() }?.run{billpaid.paymentDetails =  updateBillRequest.paymentDetails}
         return ResponseEntity(billpaid, null, HttpStatus.CREATED)
     }
 }
