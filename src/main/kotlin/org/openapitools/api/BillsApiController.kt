@@ -28,9 +28,9 @@ class BillsApiController() {
 
     private val bill1 = BillDetails(BillStatus.pending, "1234", "Table1", 1000L, "123", itemizedBill = "Burger:£5.00;Fries:£3.00;Coke:£2.00;;Subtotal:£10.00;;Service not included")
     private val bill2 = BillDetails(BillStatus.pending, "2345", "Table2", 1200L, itemizedBill = "Pizza")
-    private val billpaid = BillDetails(billId = "123", billTag = "Table1", totalAmount = 1200L, itemizedBill = "Pizza", status = BillStatus.complete, userId = "1", billDateTime = OffsetDateTime.now(), paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
+    private var billpaid = BillDetails(billId = "123", billTag = "Table1", totalAmount = 1200L, itemizedBill = "Pizza", status = BillStatus.complete, userId = "1", billDateTime = OffsetDateTime.now(), paymentDetails = listOf(PaymentDetails(PaymentResultType.sale,
         OffsetDateTime.now(),TransactionResultCode.authorisedMinusOnline,"123",
-        Merchant("111","1111"),Paypoint("1", "11111"), value = PaymentDetailsValue(1000L,"GBP", 0, 0), paymentInstrument = PaymentDetailsPaymentInstrument(PaymentDetailsPaymentInstrument.Type.cardPresent,card = PaymentCard("111", cardNumber = "12000000000434", expiryDate = CardDate(10,25), type = CardType.credit, applicationLabel = "01", panSequenceNumber = "01"), barcode = "")
+        Merchant("111","1111"),Paypoint("1", "11111"),  value = PaymentDetailsValue(1000L,"GBP", 0, 0), paymentInstrument = PaymentDetailsPaymentInstrument(PaymentDetailsPaymentInstrument.Type.cardPresent,card = PaymentCard("111", cardNumber = "12000000000434", expiryDate = CardDate(10,25), type = CardType.credit, applicationLabel = "01", panSequenceNumber = "01", applicationIdentifier = "000000001"), barcode = "")
     )))
     private val bill3ToRefund = BillDetails(status = BillStatus.pending, billId ="3456", billTag ="Table3", totalAmount = -1200L, itemizedBill = "Pizza          £12.00")
 
@@ -276,6 +276,7 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<BillDetails> {
-        return ResponseEntity(bill1, null, HttpStatus.CREATED)
+        billpaid.paymentDetails = updateBillRequest.paymentDetails
+        return ResponseEntity(billpaid, null, HttpStatus.CREATED)
     }
 }
