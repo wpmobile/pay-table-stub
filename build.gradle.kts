@@ -34,6 +34,7 @@ dependencies {
     compile("org.jetbrains.kotlin:kotlin-reflect")
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springdoc:springdoc-openapi-ui:1.6.8")
+    implementation ("com.google.code.gson:gson:2.7")
 
     compile("com.google.code.findbugs:jsr305:3.0.2")
     compile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")

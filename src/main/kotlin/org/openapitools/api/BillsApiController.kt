@@ -1,5 +1,6 @@
 package org.openapitools.api
 
+import com.google.gson.Gson
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -14,9 +15,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.OffsetDateTime
-import java.time.OffsetTime
-import java.util.logging.Logger
-import javax.smartcardio.Card
+
 import javax.validation.Valid
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
@@ -276,7 +275,10 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<BillDetails> {
+        val gson = Gson()
+        println(gson.toJson(updateBillRequest, UpdateBillRequest::class.java))
         updateBillRequest.paymentDetails.takeIf { it.isNullOrEmpty().not() }?.run{billpaid.paymentDetails =  updateBillRequest.paymentDetails}
+        println(gson.toJson(billpaid, BillDetails::class.java))
         return ResponseEntity(billpaid, null, HttpStatus.CREATED)
     }
 }
