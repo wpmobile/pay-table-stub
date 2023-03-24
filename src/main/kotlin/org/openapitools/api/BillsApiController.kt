@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import org.apache.commons.logging.Log
 import org.openapitools.model.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
