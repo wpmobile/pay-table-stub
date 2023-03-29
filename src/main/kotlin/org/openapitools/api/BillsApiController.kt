@@ -274,10 +274,8 @@ class BillsApiController() {
             `in` = ParameterIn.HEADER
         ) @RequestHeader(value = "X-WP-User-Id", required = false) xWPUserId: kotlin.String?
     ): ResponseEntity<BillDetails> {
-        val gson = Gson()
-        println(gson.toJson(updateBillRequest, UpdateBillRequest::class.java))
+        println("put bill")
         updateBillRequest.paymentDetails.takeIf { it.isNullOrEmpty().not() }?.run{billpaid.paymentDetails =  updateBillRequest.paymentDetails}
-        println(gson.toJson(billpaid, BillDetails::class.java))
         return ResponseEntity(billpaid, null, HttpStatus.CREATED)
     }
 }
